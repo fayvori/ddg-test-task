@@ -1,0 +1,55 @@
+---
+- name: Include OS-specific vars
+  ansible.builtin.include_vars: "{{ lookup('ansible.builtin.first_found', params) }}"
+  vars:
+    params:
+      files:
+        - '{{ ansible_facts["os_family"] }}.yml'
+      paths:
+        - "vars"
+
+- ansible.builtin.include_tasks: debian.yml
+  when: ansible_facts["os_family"] | lower == 'debian'
+
+- name: Update package cache
+  ansible.builtin.package:
+    update_cache: true
+
+- name: Install Docker pkgs
+  ansible.builtin.package:
+    name: "{{ docker_pkgs }}"
+    state: "{{ docker_pkgs_state }}"
+  notify: Restart Docker service
+
+- name: Install docker-compose plugin if enabled
+  ansible.builtin.package:
+    name: "{{ docker_compose_pkg }}"
+    state: "{{ docker_compose_pkg_state }}"
+  when: docker_install_docker_compose | bool == true 
+
+- name: Ensure Docker service is enabled at boot
+  ansible.builtin.service:
+    name: docker
+    state: "{{ docker_service_state }}"
+    enabled: "{{ docker_service_enabled }}"
+  when: docker_enable_service_at_boot | bool
+
+- name: Add users to docker group if any
+  block:
+    - name: Get docker group data
+      ansible.builtin.getent:
+        database: group
+        key: "{{ docker_group_name }}"
+        split: ":"
+      when: docker_users | length > 0
+
+    - name: Check for users to add to docker group
+      set_fact:
+        add_users_to_docker_group: true
+      when:
+        - item not in ansible_facts.getent_group["docker"][2]
+        - docker_users | length > 0
+      with_items: "{{ docker_users }}"
+
+    - ansible.builtin.include_tasks: users.yml
+      when: add_users_to_docker_group is defined

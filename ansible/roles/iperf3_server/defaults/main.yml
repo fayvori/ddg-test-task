@@ -1,0 +1,16 @@
+---
+iperf3_server_pkgs:
+  - iperf3
+iperf3_server_pkgs_state: "present"
+
+iperf3_server_options: "--server"
+
+iperf3_server_systemd_enabled: true
+iperf3_server_systemd_state: "started"
+iperf3_server_systemd_unit_file_location: "/etc/systemd/system/iperf3-server.service"
+
+# By default user iperf in group iperf is created
+iperf3_server_create_dedicated_user: false
+
+iperf3_server_user: "iperf"
+iperf3_server_group: "iperf"

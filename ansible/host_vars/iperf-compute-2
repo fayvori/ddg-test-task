@@ -1,0 +1,25 @@
+# 10.0.96.100/30 subnet
+.gre_tunnel_local_ip: &gre_tunnel_local_ip "10.0.96.102/30"
+.gre_tunnel_remote_ip: &gre_tunnel_remote_ip "10.0.96.101/30"
+
+systemd_networkd_reload_config: true
+
+systemd_networkd_network:
+  gre10:
+    - Match:
+      - Name: "gre10"
+    - Network:
+      - DHCP: "no"
+      - Address: *gre_tunnel_local_ip
+
+systemd_networkd_netdev:
+  gre10:
+    - NetDev:
+      - Name: "gre10"
+      - Kind: "gre"
+      - MTUBytes: 1400
+    - Tunnel:
+      - Local: "192.168.100.102"
+      - Remote: "192.168.100.101"
+      - TTL: 25
+      - Independent: "true"

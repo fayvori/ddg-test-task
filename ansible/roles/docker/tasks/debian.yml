@@ -1,0 +1,34 @@
+---
+- name: Make sure that apt key is not present
+  ansible.builtin.file:
+    path: /etc/apt/trusted.gpg.d/docker.asc
+    state: absent
+
+- name: Remove old and depricated Docker stuff
+  block:
+    - name: Make sure that old apt source list is not present in /etc/apt/sources.list.d
+      ansible.builtin.file:
+        path: '/etc/apt/sources.list.d/download_docker_com_linux_{{ ansible_facts["distribution"] | lower }}.list'
+        state: absent
+
+    - name: Make sure that old versions of Docker are not installed.
+      ansible.builtin.package:
+        name: "{{ docker_depricated_pkgs }}"
+        state: absent
+
+    - name: Make sure that legacy repo file is not present.
+      ansible.builtin.file:
+        path: "/etc/apt/sources.list.d/docker.list"
+        state: absent
+
+- name: Add or remove Docker deb repository
+  ansible.builtin.deb822_repository:
+    name: docker
+    types: deb
+    uris: '{{ docker_download_url }}/{{ ansible_facts["distribution"] | lower }}'
+    suites: "{{ ansible_facts.distribution_release }}"
+    components: "{{ docker_apt_release_channel }}"
+    signed_by: "{{ docker_apt_gpg_key }}"
+    state: "{{ 'present' if docker_automatic_repo_setup | bool else 'absent' }}"
+  notify: 
+    - Update APT

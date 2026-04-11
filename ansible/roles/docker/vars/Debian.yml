@@ -1,0 +1,14 @@
+---
+# Docker depricated packages and packages which should be uninstalled to avoid conflicts
+docker_depricated_pkgs:
+  - docker.io
+  - docker-compose
+  - docker-compose-v2
+  - docker-doc
+  - podman-docker
+  # Docker Engine bundles these dependencies as one bundle: containerd.io. 
+  # If you have installed the containerd or runc previously, uninstall them to avoid conflicts 
+  # with the versions bundled with Docker Engine.
+  - containerd
+  - runc
+  
