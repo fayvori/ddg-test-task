@@ -1,0 +1,27 @@
+---
+nftables_pkg: nftables
+
+# TODO Examples
+
+nftables_vars: ""
+
+nftables_sets: ""
+
+# Filter table
+nftables_filter_input: []
+
+nftables_filter_forward: []
+
+nftables_filter_output: []
+
+nftables_filter_custom_chains: []
+
+# NAT table
+nftables_nat_output: []
+
+nftables_nat_prerouting: []
+
+nftables_nat_postrouting: []
+
+# TODO
+nftables_nat_custom_chains: []

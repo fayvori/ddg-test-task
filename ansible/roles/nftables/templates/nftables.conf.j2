@@ -1,0 +1,72 @@
+#!/usr/sbin/nft -f
+
+{% macro nftables_rules(rules) %}
+{% for rule in rules %}
+{% if rule.comment | trim | length > 0 %}
+# {{ rule.comment }}
+{% endif -%}
+{{ rule.rule }}
+{% endfor -%} 
+{% endmacro -%}
+
+# TODO fix custom chain idention of last curved brace
+{% macro nftables_custom_chain_rules(custom_chain) %}
+{% for item in custom_chain %}
+chain {{ item.name }} {
+{{ nftables_rules(item.rules) | indent(4, first=true) -}}
+}
+{% endfor -%}
+{% endmacro -%}
+
+flush ruleset
+
+{{ nftables_vars }}
+
+{% if nftables_sets | trim | length > 0 %}
+{{ nftables_sets | trim -}}
+{% endif %}
+
+table inet filter {
+  chain input {
+    {{ nftables_rules(nftables_filter_input) | indent | trim }}
+  }
+
+  chain forward {
+    {{ nftables_rules(nftables_filter_forward) | indent | trim }}
+  }
+
+  chain output {
+    {{ nftables_rules(nftables_filter_output) | indent | trim }}
+  }
+
+{% if nftables_filter_custom_chains | list | length > 0 %}
+  {{ nftables_custom_chain_rules(nftables_filter_custom_chains) }}
+{% endif -%}
+
+}
+{% set any_nat_chain_is_not_empty = [
+    nftables_nat_output,
+    nftables_nat_prerouting,
+    nftables_nat_postrouting
+  ] | map('length') | select('>', 0) | list | length > 0 %}
+{% if any_nat_chain_is_not_empty %}
+table ip nat {
+{% if nftables_nat_output | list | length > 0 %}
+  chain output {
+    {{ nftables_rules(nftables_nat_output) | indent | trim }}
+  }
+{% endif -%}
+
+{% if nftables_nat_prerouting | list | length > 0 %}
+  chain prerouting {
+    {{ nftables_rules(nftables_nat_prerouting) | indent | trim }}
+  }
+{% endif -%}
+
+{% if nftables_nat_postrouting | list | length > 0 %}
+  chain postrouting {
+    {{ nftables_rules(nftables_nat_postrouting) | indent | trim }}
+  }
+{% endif -%}
+}
+{% endif -%}

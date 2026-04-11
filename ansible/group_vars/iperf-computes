@@ -1,1 +1,46 @@
+---
+nftables_vars: |
+  define TUNNEL_CIDR = 10.0.96.100/30
+  define LAN_CIDR = 192.168.100.0/24
 
+nftables_sets: |
+  set tcp_allowed_in_tunnel {
+    type inet_service
+    elements = { 5201 }
+  }
+  
+  set udp_allowed_in_tunnel {
+    type inet_service
+    elements = { 5201 }
+  }
+
+nftables_filter_input:
+  - { rule: "type filter hook input priority 0;", comment: "" }
+  - { rule: "policy drop;", comment: "Set default policy to drop" }
+  - { rule: "iif lo accept;", comment: "Allow loopback traffic" }
+  - { rule: "ct state established,related accept;", comment: "Accept already established and related connection from ct table" }
+  - { rule: "ct state invalid drop;", comment: "Drop invalid connections" }
+  - { rule: "ip protocol icmp accept;", comment: "Accept icmp for debugging" }
+  - { rule: "tcp dport ssh accept;", comment: "Allow ssh" }
+  - { rule: "ip saddr $LAN_CIDR accept;", comment: "" }
+  - { rule: "ip saddr $TUNNEL_CIDR jump TUNNEL_IN;", comment: "" }
+  - { rule: "counter reject;", comment: "" }
+
+nftables_filter_forward:
+  - { rule: "type filter hook forward priority 0;", comment: "" }
+  - { rule: "policy drop;", comment: "Set default policy to drop" }
+  - { rule: "ct state established,related accept;", comment: "Accept already established and related connection from ct table" }
+  - { rule: "ct state invalid drop;", comment: "Drop invalid connections" }
+  - { rule: "ip saddr $TUNNEL_CIDR ip daddr $TUNNEL_CIDR accept;", comment: "Accept tunnel forwarding if needed" }
+  - { rule: "counter reject;", comment: "" }
+
+nftables_filter_output:
+  - { rule: "type filter hook output priority 0;", comment: "" }
+  - { rule: "policy accept;", comment: "" }
+
+nftables_filter_custom_chains:
+  - name: TUNNEL_IN
+    rules:
+      - { rule: "tcp dport @tcp_allowed_in_tunnel accept;", comment: "" }
+      - { rule: "udp dport @udp_allowed_in_tunnel accept;", comment: "" }
+      - { rule: "drop;", comment: "" }

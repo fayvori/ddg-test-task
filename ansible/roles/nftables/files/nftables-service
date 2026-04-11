@@ -1,0 +1,62 @@
+#!/bin/bash
+
+NFT="/usr/sbin/nft"
+
+NFTABLES_COMMAND="${1}"
+
+NFTABLES_CONFIG="/etc/nftables.conf"
+NFTABLES_OLD_AUTO_CONFIG="/etc/nftables-auto.conf"
+NFTABLES_AUTO_CONFIG="/var/lib/nftables/auto.conf"
+NFTABLES_AUTO_MIGRATED="/var/lib/nftables/auto-migrated"
+
+if [ -e "${NFTABLES_OLD_AUTO_CONFIG}" ] ; then
+  if [ -e "${NFTABLES_AUTO_MIGRATED}" ] ; then
+    echo "Warning: Found an old style auto file ${NFTABLES_OLD_AUTO_CONFIG}. Those are no longer supported. The new path is ${NFTABLES_AUTO_CONFIG}. If you restore files from a backup, please restore them to the new path."
+  else
+    echo "Warning: Found an old style auto file ${NFTABLES_OLD_AUTO_CONFIG}. Moving to the new path ${NFTABLES_AUTO_CONFIG}."
+    mv "${NFTABLES_OLD_AUTO_CONFIG}" "${NFTABLES_AUTO_CONFIG}"
+    touch "${NFTABLES_AUTO_MIGRATED}"
+  fi
+fi
+
+case "${NFTABLES_COMMAND}" in
+  start | reload)
+    NFTABLES_USE_CONFIG="${NFTABLES_CONFIG}"
+    if [ -e "${NFTABLES_AUTO_CONFIG}" ] ; then
+      if [ -s "${NFTABLES_AUTO_CONFIG}" ] ; then
+        NFTABLES_USE_CONFIG="${NFTABLES_AUTO_CONFIG}"
+      else
+        echo "Not loading empty '${NFTABLES_AUTO_CONFIG}'. Falling back to '${NFTABLES_CONFIG}'."
+      fi
+    fi
+
+    if ${NFT} --check --file "${NFTABLES_USE_CONFIG}" ; then
+      echo "Loading '${NFTABLES_USE_CONFIG}'"
+      ${NFT} --file "${NFTABLES_USE_CONFIG}"
+    else
+      echo "nft --check for '${NFTABLES_USE_CONFIG}' failed. Not loading the config."
+      exit 1
+    fi
+  ;;
+  stop)
+    NFTABLES_RULESET_LINECOUNT=$(nft list ruleset | wc -l)
+    if [ -e "${NFTABLES_AUTO_CONFIG}" ] ; then
+      if [ $NFTABLES_RULESET_LINECOUNT -gt 0 ] ; then
+        echo "Saving current ruleset to '${NFTABLES_AUTO_CONFIG}'"
+        echo "flush ruleset" > "${NFTABLES_AUTO_CONFIG}"
+        ${NFT} list ruleset >> "${NFTABLES_AUTO_CONFIG}"
+      else
+        echo "Not saving empty ruleset"
+      fi
+    fi
+    ${NFT} flush ruleset
+  ;;
+  *)
+     echo "Usage: ${0} (start|stop|reload)"
+     echo ""
+     echo "If '${NFTABLES_AUTO_CONFIG}' exists then the stop action will save the current ruleset to this file and load the config from this file, if it is not empty. In case of an empty file it will load the normal config file."
+     echo ""
+     echo "Otherwise '${NFTABLES_CONFIG}' will be used and the stop action will only flush the ruleset."
+  ;;
+esac
+

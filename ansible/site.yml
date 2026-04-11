@@ -5,6 +5,13 @@
   roles:
     - networkd_systemd
 
+- name: NFTables config
+  # TODO change later to all
+  hosts: iperf-computes
+  become: yes
+  roles:
+    - nftables
+
 - name: Launch iperf3-server on iperf-computes
   hosts: iperf-computes
   become: yes
