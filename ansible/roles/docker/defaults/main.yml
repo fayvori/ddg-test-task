@@ -1,0 +1,33 @@
+---
+# Edition of docker: ce - Community Edition, ee - Enterprise Edition
+docker_installation_candidate: 'ce'
+
+# Automatically add and configure docker apt repositories, can be toggled off
+# by setting docker_automatic_repo_setup to false
+docker_automatic_repo_setup: true
+docker_download_url: https://download.docker.com/linux
+docker_apt_gpg_key: "{{ docker_download_url }}/{{ ansible_facts.distribution | lower}}/gpg"
+docker_apt_release_channel: stable
+
+# docker-compose installation options
+docker_install_docker_compose: true
+docker_compose_pkg_state: present
+docker_compose_pkg: docker-compose-plugin
+
+# Enabling docker service at system boot
+docker_enable_service_at_boot: true
+docker_service_state: started
+docker_service_enabled: true
+
+# Docker installation pkgs
+docker_pkgs_state: present
+docker_pkgs:
+  - "docker-{{ docker_installation_candidate }}"
+  - "docker-{{ docker_installation_candidate }}-cli"
+  - "containerd.io"
+  - docker-buildx-plugin
+
+docker_group_name: docker
+
+# A list of users which should also be added to docker group
+docker_users: []

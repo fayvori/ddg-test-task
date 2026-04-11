@@ -1,0 +1,8 @@
+---
+- name: Restart systemd-networkd systemd unit
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-networkd
+    state: restarted
+    daemon-reload: true
+  when: systemd_networkd_reload_config

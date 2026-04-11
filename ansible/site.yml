@@ -1,0 +1,18 @@
+---
+- name: Interfaces config
+  hosts: iperf-computes
+  become: yes
+  roles:
+    - networkd_systemd
+
+- name: Launch iperf3-server on iperf-computes
+  hosts: iperf-computes
+  become: yes
+  roles:
+    - iperf3_server
+
+- name: Install docker on monitoring compute
+  hosts: monitoring-computes
+  become: yes
+  roles:
+    - docker

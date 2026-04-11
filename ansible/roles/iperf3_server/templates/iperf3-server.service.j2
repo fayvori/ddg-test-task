@@ -1,0 +1,15 @@
+[Unit]
+Description=iperf3 Server
+After=network.target
+
+[Service]
+Type=simple
+{% if iperf3_server_create_dedicated_user %}
+User={{ iperf3_server_user }}
+Group={{ iperf3_server_group }}
+{% endif %}
+ExecStart=iperf3 {{ iperf3_server_options }}
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target

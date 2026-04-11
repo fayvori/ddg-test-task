@@ -1,0 +1,66 @@
+---
+# TODO MSS Clamping & ipsec transport mode encryption
+
+- name: Enable IP forwarding
+  ansible.builtin.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: yes
+    state: present
+    reload: yes
+
+  # TODO temporary
+- name: Load ip_gre kernel module
+  ansible.builtin.shell:
+    modprobe ip_gre
+
+- name: Ensure user-defined systemd-networkd configuration folder exist
+  become: true
+  ansible.builtin.file:
+    path: "{{ systemd_networkd_conf_directory }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Provision systemd-networkd configuration files
+  become: true
+  vars:
+    all_files:
+      - type: link
+        files: "{{ systemd_networkd_link | dict2items }}"
+        dest_folder: "{{ systemd_networkd_directory }}"
+      - type: netdev
+        files: "{{ systemd_networkd_netdev | dict2items }}"
+        dest_folder: "{{ systemd_networkd_directory }}"
+      - type: network
+        files: "{{ systemd_networkd_network | dict2items }}"
+        dest_folder: "{{ systemd_networkd_directory }}"
+      - type: conf
+        files: "{{ systemd_networkd_conf | dict2items }}"
+        dest_folder: "{{ systemd_networkd_conf_directory }}"
+  ansible.builtin.template:
+    src: systemd_networkd.j2
+    dest: "{{ item.0.dest_folder }}/{{ item.1.key }}.{{ item.0.type }}"
+    owner: root
+    group: systemd-network
+    mode: "0644"
+  loop: "{{ query('subelements', all_files, 'files') }}"
+  loop_control:
+    label: "type: {{ item.0.type }}, name: {{ item.1.key }}"
+  notify: Restart systemd-networkd systemd unit
+
+- name: Enable systemd-networkd
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-networkd
+    enabled: true
+  when: (systemd_networkd_network | length > 0) or (systemd_networkd_link | length > 0) or (systemd_networkd_netdev | length > 0)
+
+- name: Start and enable systemd-resolved
+  become: true
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    enabled: true
+    state: started
+  when: systemd_networkd_enable_resolved

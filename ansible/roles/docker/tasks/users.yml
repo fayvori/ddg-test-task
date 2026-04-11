@@ -1,0 +1,8 @@
+---
+# Add all of users from docker_users group from vars to docker group
+- name: Make sure that docker_users are in docker group
+  user:
+    name: "{{ item }}"
+    groups: "{{ docker_group_name }}"
+    append: true
+  with_items: "{{ docker_users }}"
