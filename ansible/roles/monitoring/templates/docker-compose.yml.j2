@@ -15,7 +15,7 @@ services:
     ports:
       - "{{ prometheus_port }}:9090"
     networks:
-      - monitoring
+      - {{ docker_compose_monitoring_network }}
 
   grafana:
     image: {{ grafana_image }}:{{ grafana_version }}
@@ -35,12 +35,12 @@ services:
     ports:
       - "{{ grafana_port }}:3000"
     networks:
-      - monitoring
+      - {{ docker_compose_monitoring_network }}
     depends_on:
       - prometheus
 
 networks:
-  monitoring:
+  {{ docker_compose_monitoring_network }}:
     driver: bridge
 
 volumes:

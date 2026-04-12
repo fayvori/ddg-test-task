@@ -1,8 +1,7 @@
 ---
-# Docker settings
-monitoring_network: "monitoring"
-compose_project_name: "monitoring"
-
+# Docker compose settings
+docker_compose_monitoring_network: "monitoring"
+docker_compose_project_name: "monitoring"
 docker_compose_path: "/opt/monitoring"
 
 # Prometheus settings
@@ -12,8 +11,7 @@ prometheus_port: 9090
 prometheus_retention_time: "15d"
 prometheus_storage_path: "/opt/prometheus"
 prometheus_config_path: "/etc/prometheus"
-prometheus_scrape_interval: "15s"
-prometheus_evaluation_interval: "15s"
+prometheus_scrape_interval: "10s"
 
 # Grafana settings
 grafana_image: "grafana/grafana"
