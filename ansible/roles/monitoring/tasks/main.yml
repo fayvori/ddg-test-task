@@ -14,6 +14,8 @@
     - "{{ docker_compose_path }}/grafana/dashboards"
     - "{{ prometheus_storage_path }}"
     - "{{ grafana_storage_path }}"
+  tags:
+    - "monitoring"
 
 # Prometheus inside container runs as non-root user, so we should chown prometheus
 # data dir for non-root user
@@ -24,12 +26,16 @@
     group: "65534"
     state: directory
     recurse: true
+  tags:
+    - "monitoring"
 
 - name: Generate Prometheus configuration
   ansible.builtin.template:
     src: prometheus.yml.j2
     dest: "{{ docker_compose_path }}/prometheus/prometheus.yml"
     mode: '0644'
+  tags:
+    - "monitoring"
   notify: Restart monitoring
 
 - name: Generate Grafana datasource configurations
@@ -40,6 +46,8 @@
   loop:
     - datasources
     - dashboards
+  tags:
+    - "monitoring"
   notify: Restart monitoring
 
 - name: Copy Grafana dashboards
@@ -48,6 +56,8 @@
     dest: "{{ docker_compose_path }}/grafana/dashboards"
     mode: '0644'
     directory_mode: '0755'
+  tags:
+    - "monitoring"
   notify: Restart monitoring
 
 - name: Generate Docker Compose configuration
@@ -55,15 +65,19 @@
     src: docker-compose.yml.j2
     dest: "{{ docker_compose_path }}/docker-compose.yml"
     mode: '0644'
+  tags:
+    - "monitoring"
   notify: Restart monitoring
 
 - name: Start monitoring stack with Docker Compose
   community.docker.docker_compose_v2:
     project_src: "{{ docker_compose_path }}"
-    project_name: "{{ compose_project_name }}"
+    project_name: "{{ docker_compose_project_name }}"
     state: "{{ (restart_monitoring | default(false)) | ternary('restarted', 'present') }}"
     pull: missing
     remove_orphans: true
+  tags:
+    - "monitoring"
 
 - name: Wait for services to be ready
   ansible.builtin.wait_for:
@@ -73,3 +87,5 @@
     - "{{ prometheus_port }}"
     - "{{ grafana_port }}"
   when: restart_monitoring is defined and monitoring_restart
+  tags:
+    - "monitoring"
