@@ -1,46 +1,43 @@
 ---
-# tasks file for ansible-wireguard
-- name: NFTABLES | Install nftables package
+- name: Update package cache
+  ansible.builtin.package:
+    update_cache: true
+- name: Install nftables pkg
   ansible.builtin.package:
     name: "{{ nftables_pkg }}"
     state: present
-#- name: NFTABLES | Deploy nftables-service unit
-#  ansible.builtin.template:
-#    src: nftables.service.j2
-#    dest: /etc/systemd/system/nftables.service
-#    owner: root
-#    group: root
-#    mode: '0755'
-- name: NFTABLES | Deploy rules config file
+- name: Deploy nftables unit
+  ansible.builtin.template:
+    src: nftables.service.j2
+    dest: "{{ nftables_systemd_unit_location }}/nftables.service"
+    owner: root
+    group: root
+    mode: '0755'
+- name: Copy test nftables config file
   ansible.builtin.template:
     src: nftables.conf.j2
     dest: /etc/nftables.conf.new
     owner: root
     group: root
     mode: '0755'
-#- name: NFTABLES | Test new config file
-#  ansible.builtin.command: "nft -c -f /etc/nftables.conf.new"
-#- name: NFTABLES | Deploy rules config file
-#  ansible.builtin.template:
-#    src: nftables.conf.j2
-#    dest: /etc/nftables.conf
-#    owner: root
-#    group: root
-#    mode: '0755'
-#- name: NFTABLES | Copy nftable-service bin
-#  copy:
-#    src: nftables-service
-#    dest: /usr/local/sbin/nftables-service
-#    owner: root
-#    group: root
-#    mode: '0755'
-#- name: NFTABLES | create varlibnftables
-#  file:
-#    path: /var/lib/nftables
-#    state: directory
-#    mode: '0700'
-#- name: NFTABLES | Enable nftables on boot
-#  systemd:
-#    name: "nftables"
-#    enabled: yes
-#    daemon_reload: yes
+- name: Test newly created config file
+  ansible.builtin.command: "nft --check --file /etc/nftables.conf.new"
+- name: Deploy rules config file
+  ansible.builtin.template:
+    src: nftables.conf.j2
+    dest: /etc/nftables.conf
+    owner: root
+    group: root
+    mode: '0755'
+- name: Copy nftable-service bin
+  copy:
+    src: nftables-service
+    dest: /usr/local/sbin/nftables-service
+    owner: root
+    group: root
+    mode: '0755'
+- name: Enable nftables on boot
+  ansible.builtin.systemd_service:
+    name: "nftables"
+    enabled: true
+    daemon_reload: true

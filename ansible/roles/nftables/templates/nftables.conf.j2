@@ -9,7 +9,6 @@
 {% endfor -%} 
 {% endmacro -%}
 
-# TODO fix custom chain idention of last curved brace
 {% macro nftables_custom_chain_rules(custom_chain) %}
 {% for item in custom_chain %}
 chain {{ item.name }} {
@@ -22,11 +21,11 @@ flush ruleset
 
 {{ nftables_vars }}
 
+table inet filter { 
 {% if nftables_sets | trim | length > 0 %}
-{{ nftables_sets | trim -}}
+{{ nftables_sets | trim | indent(2, first=true) -}}
 {% endif %}
 
-table inet filter {
   chain input {
     {{ nftables_rules(nftables_filter_input) | indent | trim }}
   }
@@ -68,5 +67,10 @@ table ip nat {
     {{ nftables_rules(nftables_nat_postrouting) | indent | trim }}
   }
 {% endif -%}
+
+{% if nftables_nat_custom_chains | list | length > 0 %}
+  {{ nftables_custom_chain_rules(nftables_nat_custom_chains) }}
+{% endif -%}
+
 }
 {% endif -%}
