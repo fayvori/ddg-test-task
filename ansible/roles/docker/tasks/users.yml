@@ -6,3 +6,5 @@
     groups: "{{ docker_group_name }}"
     append: true
   with_items: "{{ docker_users }}"
+  tags: 
+    - "docker"
