@@ -1,5 +1,12 @@
-# ethpandaops.general.traffic_control
+This role has been borrowed from
 
+- https://github.com/ethpandaops/ansible-collection-general/tree/master/roles/traffic_control
+
+repository. All creds to the authors.
+
+---
+
+# ethpandaops.general.traffic_control
 
 Uses [`tc` (traffic control)](https://man7.org/linux/man-pages/man8/tc.8.html) to add bandwith limitations and latency to existing network interfaces.
 
@@ -9,6 +16,7 @@ Uses [`tc` (traffic control)](https://man7.org/linux/man-pages/man8/tc.8.html) t
 - Systemd for service management
 
 ## Role Variables
+
 Available variables are listed below, along with default values (see `defaults/main.yml`).
 
 The `traffic_control_rules: []` variable defines the existing rules. Each rule can be configured with:
@@ -21,9 +29,6 @@ The `traffic_control_rules: []` variable defines the existing rules. Each rule c
 - `jitter` - Jitter refers to the variation in packet latency over time. Inconsistent delay can affect applications, so jitter is useful to simulate fluctuating network conditions. For example: `10ms`.
 - `loss` - Loss refers to the dropping of packets, which can occur in real-world networks due to congestion, corruption, or other issues. This is given in percentage, for example: `0.1%`.
 - `state` - This allows you to clean up any rules for a specific interface by stating the `state=absent`.
-
-
-
 
 ## Dependencies
 

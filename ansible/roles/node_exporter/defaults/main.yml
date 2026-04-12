@@ -31,6 +31,5 @@ node_exporter_system_user: "{{ node_exporter_system_group }}"
 node_exporter_systemd_service_state: "started"
 node_exporter_systemd_service_enabled: true
 
-# node_exporter_config_dir: "/etc/node_exporter"
 # Local path to stash the archive and its extraction
 node_exporter_local_cache_path: "/tmp/node_exporter-{{ node_exporter_os }}-{{ node_exporter_arch }}/{{ node_exporter_version }}"
