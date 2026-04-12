@@ -20,6 +20,7 @@ nftables_filter_input:
   - { rule: "iif lo accept;", comment: "Allow loopback traffic" }
   - { rule: "ct state established,related accept;", comment: "Accept already established and related connection from ct table" }
   - { rule: "ct state invalid drop;", comment: "Drop invalid connections" }
+  - { rule: "ip protocol icmp accept;", comment: "Accept icmp for debugging" }
   - { rule: "tcp dport ssh accept;", comment: "Allow ssh" }
   - { rule: "ip saddr $LAN_CIDR accept;", comment: "" }
   - { rule: "ip saddr $TUNNEL_CIDR jump TUNNEL_IN;", comment: "" }
