@@ -1,0 +1,43 @@
+---
+- name: Determine if node_exporter needs installation
+  block:
+    - name: Check if node_exporter binary exists
+      ansible.builtin.stat:
+        path: "{{ node_exporter_binary_path }}"
+      register: _binary_check
+
+    - name: Get version if exists
+      ansible.builtin.command:
+        cmd: "{{ node_exporter_binary_path }} --version"
+      failed_when: false
+      changed_when: false
+      register: _version_check
+      when: _binary_check.stat.exists
+
+- name: Set installation flag
+  ansible.builtin.set_fact:
+    _node_exporter_need_install: "{{ not _binary_check.stat.exists or (node_exporter_version not in _version_check.stdout) }}"
+
+- name: Install node_exporter
+  block:
+    - name: Create temp directory
+      ansible.builtin.file:
+        path: "{{ node_exporter_local_cache_path }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download and extract
+      ansible.builtin.unarchive:
+        src: "{{ node_exporter_download_url }}"
+        dest: "{{ node_exporter_local_cache_path }}"
+        remote_src: true
+        mode: "0755"
+
+    - name: Copy binary
+      ansible.builtin.copy:
+        src: "{{ node_exporter_local_cache_path }}/{{ node_exporter_unarchived_filename }}"
+        dest: "{{ node_exporter_binary_path }}"
+        remote_src: true
+        mode: "0755"
+      notify: Restart node_exporter
+  when: _node_exporter_need_install | bool

@@ -1,0 +1,14 @@
+---
+- name: "Create node_exporter group: {{ node_exporter_system_group }}"
+  ansible.builtin.group:
+    name: "{{ node_exporter_system_group }}"
+    system: true
+    state: present
+
+- name: "Create node_exporter user: {{ node_exporter_system_user }}"
+  ansible.builtin.user:
+    name: "{{ node_exporter_system_user }}"
+    system: true
+    shell: "/usr/sbin/nologin"
+    group: "{{ node_exporter_system_group }}"
+    append: true

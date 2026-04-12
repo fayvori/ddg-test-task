@@ -1,2 +1,10 @@
 docker_users:
   - debian
+
+additional_scrape_targets:
+  - job_name: "node_exporter"
+    scrape_interval: "5s"
+    static_configs:
+      - targets: "{{ _prometheus_scrape_targets }}"
+        labels:
+          service: "iperf3"
