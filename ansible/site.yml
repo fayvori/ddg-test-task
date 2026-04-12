@@ -12,6 +12,12 @@
   roles:
     - nftables
 
+- name: Limit gre bandwidth using tc
+  hosts: iperf-computes
+  become: yes
+  roles:
+    - traffic_control
+
 - name: Launch iperf3-server on iperf-computes
   hosts: iperf-computes
   become: yes

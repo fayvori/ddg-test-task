@@ -44,3 +44,8 @@ nftables_filter_custom_chains:
       - { rule: "tcp dport @tcp_allowed_in_tunnel accept;", comment: "" }
       - { rule: "udp dport @udp_allowed_in_tunnel accept;", comment: "" }
       - { rule: "counter drop;", comment: "" }
+
+traffic_control_rules:
+  - interface: gre10
+    rate: 10mbit
+    state: present
