@@ -53,11 +53,14 @@
 - name: Copy Grafana dashboards
   ansible.builtin.copy:
     src: "{{ role_path }}/files/grafana-dashboards/"
-    dest: "{{ docker_compose_path }}/grafana/dashboards"
+    dest: "{{ item }}"
     mode: '0644'
     directory_mode: '0755'
   tags:
     - "monitoring"
+  loop:
+    - "{{ docker_compose_path }}/grafana/provisioning/dashboards"
+    - "{{ docker_compose_path }}/grafana/dashboards"
   notify: Restart monitoring
 
 - name: Generate Docker Compose configuration
