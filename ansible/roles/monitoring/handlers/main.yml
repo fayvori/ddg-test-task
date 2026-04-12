@@ -1,0 +1,4 @@
+---
+- name: Restart monitoring
+  ansible.builtin.set_fact:
+    restart_monitoring: true
