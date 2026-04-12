@@ -1,15 +1,17 @@
 ---
-# TODO handle group and user deletion
 - name: Create iperf3 server group
   ansible.builtin.group:
     name: "{{ iperf3_server_group }}"
     system: true
     state: present
+  tags:
+    - "iperf3"
 
 - name: Create iperf3 server user
   ansible.builtin.user:
     name: "{{ iperf3_server_user }}"
     group: "{{ iperf3_server_group }}"
     shell: /sbin/nologin
-    append: true
     state: present
+  tags:
+    - "iperf3"

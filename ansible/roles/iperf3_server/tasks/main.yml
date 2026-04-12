@@ -1,21 +1,28 @@
 ---
 - name: Create dedicated user for iperf3-server if defined
   ansible.builtin.include_tasks: users.yml
-  when: iperf3_server_create_dedicated_user | bool
+  tags:
+    - iperf3
 
 - name: Update package cache
   ansible.builtin.package:
     update_cache: true
+  tags:
+    - iperf3
 
 - name: Install iperf3-server packages
   ansible.builtin.package:
-    name: "{{ iperf3_server_pkgs }}"
-    state: "{{ iperf3_server_pkgs_state }}"
+    name: "{{ iperf3_server_pkg }}"
+    state: "{{ iperf3_server_pkg_state }}"
+  tags:
+    - iperf3
 
 - name: Install iperf3 unit-file for systemd
   ansible.builtin.template:
     src: iperf3-server.service.j2
     dest: "{{ iperf3_server_systemd_unit_file_location }}"
+  tags:
+    - iperf3
 
 - name: Enable and start systemd iperf3-server
   ansible.builtin.systemd_service:
@@ -23,3 +30,5 @@
     name: iperf3-server
     state: "{{ iperf3_server_systemd_state }}"
     daemon_reload: true
+  tags:
+    - iperf3
