@@ -13,10 +13,14 @@
       changed_when: false
       register: _version_check
       when: _binary_check.stat.exists
+  tags:
+    - "node_exporter"
 
 - name: Set installation flag
   ansible.builtin.set_fact:
     _node_exporter_need_install: "{{ not _binary_check.stat.exists or (node_exporter_version not in _version_check.stdout) }}"
+  tags:
+    - "node_exporter"
 
 - name: Install node_exporter
   block:
@@ -41,3 +45,5 @@
         mode: "0755"
       notify: Restart node_exporter
   when: _node_exporter_need_install | bool
+  tags:
+    - "node_exporter"
