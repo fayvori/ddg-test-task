@@ -1,0 +1,25 @@
+---
+- name: "Create node_exporter user and group"
+  ansible.builtin.include_tasks: users.yml
+
+- name: "Install node_exporter if needed"
+  ansible.builtin.include_tasks: install.yml
+
+- name: Copy the node_exporter systemd unit file.
+  ansible.builtin.template:
+    src: node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+    mode: 0644
+  register: node_exporter_service
+  notify: Restart node_exporter
+
+- name: Reload systemd daemon if unit file is changed.
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: node_exporter_service is changed
+
+- name: Ensure node_exporter is running and enabled at boot.
+  ansible.builtin.service:
+    name: node_exporter
+    state: "{{ node_exporter_systemd_service_state }}"
+    enabled: "{{ node_exporter_systemd_service_enabled }}"

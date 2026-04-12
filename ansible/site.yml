@@ -24,6 +24,12 @@
   roles:
     - iperf3_server
 
+- name: Install node_exporter on iperf-computes
+  hosts: iperf-computes
+  become: yes
+  roles:
+    - node_exporter
+
 - name: Install docker on monitoring compute
   hosts: monitoring-computes
   become: yes
@@ -33,5 +39,8 @@
 - name: Launch monitoring stack on monitoring-computes
   hosts: monitoring-computes
   become: yes
+  vars:
+    # From iperf-computes we extract the ansible_host ip address and then replacing the end of the string '$' with port ':9100' (node_exporter)
+    _prometheus_scrape_targets: "{{ groups['iperf-computes'] | map('extract', hostvars, 'ansible_host') | map('regex_replace', '$', ':9100') | list }}"
   roles:
     - monitoring
