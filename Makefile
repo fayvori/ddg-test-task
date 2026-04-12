@@ -48,7 +48,7 @@ define_iperf_network: .sudo-init
 	$(VIRSH_SYSTEM) net-start $(VIRSH_NETWORK_NAME)
 	$(VIRSH_SYSTEM) net-autostart $(VIRSH_NETWORK_NAME)
 
-provision_vms: define_iperf_network $(DEBIAN_TRIXIE_QCOW_FILE_NAME)
+provision_vms: $(DEBIAN_TRIXIE_QCOW_FILE_NAME) define_iperf_network
 	@for vm in $(VM_NAMES); do \
 		./provision_vm.sh \
 			$(DEBIAN_TRIXIE_QCOW_FILE_NAME) \
