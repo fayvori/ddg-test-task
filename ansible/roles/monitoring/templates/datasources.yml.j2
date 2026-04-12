@@ -11,12 +11,3 @@ datasources:
       timeInterval: "30s"
       queryTimeout: "30s"
       httpMethod: "POST"
-
-  - name: "Dashboard provider"
-    type: file
-    disableDeletion: false
-    updateIntervalSeconds: 10
-    allowUiUpdates: false
-    options:
-      path: "{{ grafana_provisioning_path }}/dashboards"
-      foldersFromFilesStructure: true
