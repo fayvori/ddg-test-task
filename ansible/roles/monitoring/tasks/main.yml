@@ -1,0 +1,75 @@
+---
+- name: Create monitoring directory structure
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - "{{ docker_compose_path }}"
+    - "{{ docker_compose_path }}/prometheus"
+    - "{{ docker_compose_path }}/grafana"
+    - "{{ docker_compose_path }}/grafana/provisioning"
+    - "{{ docker_compose_path }}/grafana/provisioning/datasources"
+    - "{{ docker_compose_path }}/grafana/provisioning/dashboards"
+    - "{{ docker_compose_path }}/grafana/dashboards"
+    - "{{ prometheus_storage_path }}"
+    - "{{ grafana_storage_path }}"
+
+# Prometheus inside container runs as non-root user, so we should chown prometheus
+# data dir for non-root user
+- name: Chown prometheus directory permissions for {{ prometheus_storage_path }}
+  ansible.builtin.file:
+    path: "{{ prometheus_storage_path }}"
+    owner: "65534"
+    group: "65534"
+    state: directory
+    recurse: true
+
+- name: Generate Prometheus configuration
+  ansible.builtin.template:
+    src: prometheus.yml.j2
+    dest: "{{ docker_compose_path }}/prometheus/prometheus.yml"
+    mode: '0644'
+  notify: Restart monitoring
+
+- name: Generate Grafana datasource configurations
+  ansible.builtin.template:
+    src: "{{ item }}.yml.j2"
+    dest: "{{ docker_compose_path }}/grafana/provisioning/{{ item }}/{{ item }}.yml"
+    mode: '0644'
+  loop:
+    - datasources
+    - dashboards
+  notify: Restart monitoring
+
+- name: Copy Grafana dashboards
+  ansible.builtin.copy:
+    src: "{{ role_path }}/files/grafana-dashboards/"
+    dest: "{{ docker_compose_path }}/grafana/dashboards"
+    mode: '0644'
+    directory_mode: '0755'
+  notify: Restart monitoring
+
+- name: Generate Docker Compose configuration
+  ansible.builtin.template:
+    src: docker-compose.yml.j2
+    dest: "{{ docker_compose_path }}/docker-compose.yml"
+    mode: '0644'
+  notify: Restart monitoring
+
+- name: Start monitoring stack with Docker Compose
+  community.docker.docker_compose_v2:
+    project_src: "{{ docker_compose_path }}"
+    project_name: "{{ compose_project_name }}"
+    state: "{{ (restart_monitoring | default(false)) | ternary('restarted', 'present') }}"
+    pull: missing
+    remove_orphans: true
+
+- name: Wait for services to be ready
+  ansible.builtin.wait_for:
+    port: "{{ item }}"
+    timeout: 60
+  loop:
+    - "{{ prometheus_port }}"
+    - "{{ grafana_port }}"
+  when: restart_monitoring is defined and monitoring_restart

@@ -1,0 +1,37 @@
+---
+# Docker settings
+monitoring_network: "monitoring"
+compose_project_name: "monitoring"
+
+docker_compose_path: "/opt/monitoring"
+
+# Prometheus settings
+prometheus_image: "prom/prometheus"
+prometheus_version: "v3.11.1"
+prometheus_port: 9090
+prometheus_retention_time: "15d"
+prometheus_storage_path: "/opt/prometheus"
+prometheus_config_path: "/etc/prometheus"
+prometheus_scrape_interval: "15s"
+prometheus_evaluation_interval: "15s"
+
+# Grafana settings
+grafana_image: "grafana/grafana"
+grafana_version: "13.1.0-24243827787"
+grafana_port: 3000
+grafana_admin_user: "admin"
+grafana_admin_password: "admin"
+grafana_storage_path: "/opt/grafana"
+grafana_provisioning_path: "/etc/grafana/provisioning"
+
+# Additional scrape targets
+additional_scrape_targets: []
+# Example:
+#   - job_name: "my-app"
+#     scrape_interval: "30s"
+#     static_configs:
+#       - targets:
+#         - "app-server:8080"
+#         labels:
+#           env: "production"
+

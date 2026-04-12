@@ -29,3 +29,9 @@
   become: yes
   roles:
     - docker
+
+- name: Launch monitoring stack on monitoring-computes
+  hosts: monitoring-computes
+  become: yes
+  roles:
+    - monitoring
