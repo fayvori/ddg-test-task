@@ -1,0 +1,3 @@
+skip_list:
+  # YAML already gets validated by yamllint
+  - 'yaml'
