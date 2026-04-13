@@ -129,7 +129,7 @@ monitoring-compute-1 ansible_host=192.168.100.103
 а также сюда мы берем 2 адреса с `10.0.96.100/30` для создания gre интерфейсов. Стоит уточнить, что мы имеем дело с GRE over IPsec, так как gre не умеет шифровать пакеты.
 
 Для gre интерфесов был выбран mtu 1400 по следующим соображениям:
-1. 1500 (default) - 4 (gre overhead) - 52 (ipsec transport mode overhead) = 1444 + мы оставляем небольшой gap обеспечивая себя чтобы размер конечного пакета не превышал MTU и не вызывал fragmentation. Итого mtu = 1400
+1. 1500 (default) - 4 (gre overhead) - 52 (ipsec transport mode overhead) = 1444 + мы оставляем небольшой gap чтобы размер конечного пакета не превышал MTU и не вызывал фрагментацию. Итого mtu = 1400
 2. Также в nftables для gre интерфейса установлен [TCP MSS clamping чтобы автоматически высчитывать нужный MSS](https://github.com/fayvori/ddg-test-task/blob/ddg-0000-add-readme/ansible/group_vars/iperf-computes#L35-L36)
 
 ## Прокатка и тестирования
