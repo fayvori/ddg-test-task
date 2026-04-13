@@ -26,8 +26,7 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password }}
       - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
       - GF_SERVER_ROOT_URL=http://localhost:{{ grafana_port }}
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_AUTH_ANONYMOUS_ENABLED=false
     volumes:
       - ./grafana/provisioning:{{ grafana_provisioning_path }}
       - ./grafana/dashboards:/var/lib/grafana/dashboards
