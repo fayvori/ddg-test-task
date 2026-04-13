@@ -125,7 +125,7 @@ monitoring-compute-1 ansible_host=192.168.100.103
 После разворачивания виртуальных машин можем переходить к делу. Для прокати всех ролей провалимся в директорию `ansible`, и уже там запустим утилиту `ansible-playbook`
 
 ```bash
-cd ansible && ansible-playbook --key-file ../build/temp_key_rsa -i inventory.ini site.yml
+cd ansible && ansible-playbook --key-file ../build/temp_rsa_key -u debian -i inventory.ini site.yml
 ```
 
 После успешной прокатки можем провалиться на любой из `iperf-computes` хостов и погонять там трафик через iperf
@@ -148,6 +148,28 @@ ssh -i build/temp_rsa_key debian@192.168.100.102
 iperf3 -c 10.0.96.101 --bidir -t 300
 ```
 
+```
+[  5][TX-C] 208.00-209.00 sec  1.38 MBytes  11.5 Mbits/sec    0    591 KBytes
+[  7][RX-C] 208.00-209.00 sec  1.25 MBytes  10.5 Mbits/sec
+[  5][TX-C] 209.00-210.00 sec  1.38 MBytes  11.5 Mbits/sec    0    591 KBytes
+[  7][RX-C] 209.00-210.00 sec  1.12 MBytes  9.44 Mbits/sec
+[  5][TX-C] 210.00-211.00 sec   768 KBytes  6.30 Mbits/sec    0    591 KBytes
+[  7][RX-C] 210.00-211.00 sec  1.12 MBytes  9.45 Mbits/sec
+[  5][TX-C] 211.00-212.00 sec  1.25 MBytes  10.5 Mbits/sec    0    591 KBytes
+[  7][RX-C] 211.00-212.00 sec  1.12 MBytes  9.43 Mbits/sec
+[  5][TX-C] 212.00-213.00 sec  1.50 MBytes  12.6 Mbits/sec    0    591 KBytes
+[  7][RX-C] 212.00-213.00 sec  1.12 MBytes  9.44 Mbits/sec
+[  5][TX-C] 213.00-214.00 sec   640 KBytes  5.25 Mbits/sec    0    591 KBytes
+[  7][RX-C] 213.00-214.00 sec  1.12 MBytes  9.45 Mbits/sec
+[  5][TX-C] 214.00-215.00 sec  1.38 MBytes  11.5 Mbits/sec    0    591 KBytes
+[  7][RX-C] 214.00-215.00 sec  1.12 MBytes  9.43 Mbits/sec
+[  5][TX-C] 215.00-216.00 sec  1.38 MBytes  11.5 Mbits/sec    0    591 KBytes
+[  7][RX-C] 215.00-216.00 sec  1.25 MBytes  10.5 Mbits/sec
+[  5][TX-C] 216.00-217.00 sec   640 KBytes  5.24 Mbits/sec    0    591 KBytes
+```
+
+![gre_interface](./assets/gre_interface.png)
+
 После пары минут prometheus соберет достаточно метрик с node_exporter'а и мы увидим, что трафик упирается в потолок в 10 mbit/s (как и было указано в тз) из-за ограничений сделанных tc
 
 Теперь же запустим трафик напрямую
@@ -156,5 +178,27 @@ iperf3 -c 10.0.96.101 --bidir -t 300
 iperf3 -c 192.168.100.101 --bidir -t 300
 ```
 
-В этом случае уже видим что никаких ограничений нет, а значит все работает как надо.
+```
+[  7][RX-C] 234.00-235.00 sec  1.01 GBytes  8.65 Gbits/sec
+[  5][TX-C] 235.00-236.00 sec  1.05 GBytes  9.00 Gbits/sec    1   4.02 MBytes
+[  7][RX-C] 235.00-236.00 sec  1.09 GBytes  9.33 Gbits/sec
+[  5][TX-C] 236.00-237.01 sec  1.11 GBytes  9.46 Gbits/sec    0   4.02 MBytes
+[  7][RX-C] 236.00-237.01 sec  1013 MBytes  8.41 Gbits/sec
+[  5][TX-C] 237.01-238.00 sec  1.05 GBytes  9.02 Gbits/sec    0   4.02 MBytes
+[  7][RX-C] 237.01-238.00 sec   963 MBytes  8.16 Gbits/sec
+[  5][TX-C] 238.00-239.00 sec  1.06 GBytes  9.07 Gbits/sec    0   4.02 MBytes
+[  7][RX-C] 238.00-239.00 sec  1.03 GBytes  8.86 Gbits/sec
+[  5][TX-C] 239.00-240.00 sec   984 MBytes  8.25 Gbits/sec    3   4.02 MBytes
+[  7][RX-C] 239.00-240.00 sec   846 MBytes  7.10 Gbits/sec
+[  5][TX-C] 240.00-241.00 sec  1.01 GBytes  8.64 Gbits/sec    0   4.02 MBytes
+[  7][RX-C] 240.00-241.00 sec  1.18 GBytes  10.1 Gbits/sec
+[  5][TX-C] 241.00-242.00 sec  1.15 GBytes  9.82 Gbits/sec    0   4.02 MBytes
+[  7][RX-C] 241.00-242.00 sec  1.02 GBytes  8.71 Gbits/sec
+[  5][TX-C] 242.00-243.00 sec  1.13 GBytes  9.76 Gbits/sec    0   4.02 MBytes
+[  7][RX-C] 242.00-243.00 sec   950 MBytes  7.99 Gbits/sec
+[  5][TX-C] 243.00-244.00 sec  1.09 GBytes  9.37 Gbits/sec    0   4.02 MBytes
+```
 
+![direct_connect](./assets/direct_connection.png)
+
+В этом случае уже видим что никаких ограничений нет, а значит все работает как надо.
