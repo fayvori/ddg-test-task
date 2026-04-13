@@ -1,6 +1,8 @@
 docker_users:
   - debian
 
+grafana_admin_password: "secure_pass"
+
 additional_scrape_targets:
   - job_name: "node_exporter"
     scrape_interval: "5s"
