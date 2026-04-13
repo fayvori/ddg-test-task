@@ -32,8 +32,8 @@ nftables_filter_forward:
   - { rule: "ct state established,related accept;", comment: "Accept already established and related connection from ct table" }
   - { rule: "ct state invalid drop;", comment: "Drop invalid connections" }
   - { rule: "ip saddr $TUNNEL_CIDR ip daddr $TUNNEL_CIDR accept;", comment: "Accept tunnel forwarding if needed" }
-  - { rule: "iifname gre10 tcp flags syn tcp option maxseg size set rt", comment: "Add tcp clamping for gre10 interface" }
-  - { rule: "oifname gre10 tcp flags syn tcp option maxseg size set rt mtu", comment: "Add tcp clamping for gre10 interface" }
+  - { rule: "iifname gre10 tcp flags syn tcp option maxseg size set rt mtu;", comment: "Enable tcp mss clamping for gre10"}
+  - { rule: "oifname gre10 tcp flags syn tcp option maxseg size set rt mtu;", comment: "Enable tcp mss clamping for gre10" }
   - { rule: "counter reject;", comment: "" }
 
 nftables_filter_output:
