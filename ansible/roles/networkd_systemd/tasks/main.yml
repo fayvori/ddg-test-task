@@ -1,6 +1,4 @@
 ---
-# TODO MSS Clamping & ipsec transport mode encryption
-
 - name: Enable IP forwarding
   ansible.builtin.sysctl:
     name: net.ipv4.ip_forward
@@ -9,10 +7,10 @@
     state: present
     reload: yes
 
-  # TODO temporary
-- name: Load ip_gre kernel module
-  ansible.builtin.shell:
-    modprobe ip_gre
+- name: Enable GRE kernel module
+  community.general.modprobe:
+    name: ip_gre
+    state: present
 
 - name: Ensure user-defined systemd-networkd configuration folder exist
   become: true
